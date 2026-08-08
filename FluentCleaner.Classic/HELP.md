@@ -8,6 +8,12 @@ The visual starting point is the CCleaner 2.x era. That familiarity is intention
 
 FluentCleaner is not affiliated with Piriform, CCleaner, or Gen Digital and contains no CCleaner program code.
 
+## Modern or Classic?
+
+Both editions use the same cleaning engine and Winapp2 parser, but serve different Windows users. **Modern** provides the current WinUI 3 experience, while **Classic** favors a tiny footprint, immediate startup, broad compatibility, and a deliberately direct desktop interface. They are versioned and released independently; neither edition replaces the other.
+
+See the current [Modern vs. Classic comparison](https://github.com/builtbybel/FluentCleaner#-download-latest-stable) for downloads, requirements, and deployment differences. General project questions are answered in the [FluentCleaner FAQ](https://github.com/builtbybel/FluentCleaner#faq).
+
 ## Familiar by design, ahead where it matters
 
 Classic looks older than it is. In several practical areas it already goes beyond the last lean CCleaner 5.x generation:
@@ -37,6 +43,15 @@ This is not nostalgia wrapped around an old cleaner. It is a current rule-driven
 7. Click **Run Cleaner** only when the result is what you expect.
 
 For a first run, leave Winapp3 disabled and avoid selecting everything at once. A larger result is not automatically a better result.
+
+## Quick tips
+
+- Start with the database defaults, analyze first, and enable additional entries only when you understand what they remove.
+- Right-click a result to inspect its exact source rule or protect a file, folder, or registry key without typing the exclusion manually.
+- Use a complete `PATH` exclusion for large directory trees you never want scanned; FluentCleaner can skip the branch before enumerating it.
+- Keep personal or experimental rules in the `Custom` folder. A Custom Cleaner with the same name can override a built-in entry without modifying the database.
+- Close browsers before analyzing browser data so locked files and immediately recreated databases do not distort the result.
+- Place `settings.json` beside the executable before launch when you want a self-contained portable configuration.
 
 ## The Cleaner view
 
