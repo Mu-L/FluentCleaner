@@ -118,7 +118,7 @@
     "About_TranslatedBy": "翻譯：{0}",
     "About_LnkGitHub": "GitHub",
     "About_LnkIssues": "回報問題",
-    "About_LnkFaq": "常見問題",
+    "About_LnkHelp": "說明",
     "Exclusions_BtnRemove": "移除",
     "Exclusions_BtnAdd": "新增",
     "Exclusions_ChkEnabled": "啟用全域排除項",

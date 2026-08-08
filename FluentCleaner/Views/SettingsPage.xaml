@@ -438,7 +438,7 @@
                              TextWrapping="NoWrap"
                              BorderThickness="0"
                              Padding="12"
-                             PlaceholderText="PATH|%LocalAppData%\Microsoft\Edge*\User Data\*\Service Worker&#x0a;PATH|%LocalAppData%\Microsoft\Edge*\User Data\*\IndexedDB&#x0a;FILE|%AppData%\Mozilla\Firefox\Profiles\|places.sqlite" />
+                             PlaceholderText="PATH|%LocalAppData%\Microsoft\Edge*\User Data\*\Service Worker&#x0a;FILE|%AppData%\Mozilla\Firefox\Profiles\|places.sqlite&#x0a;REG|HKCU\Software\Example" />
                 </Border>
 
                 <!-- Built-in protected paths;always skipped, read-only, just so the user can see them -->

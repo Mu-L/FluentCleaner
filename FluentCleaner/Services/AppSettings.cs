@@ -50,8 +50,8 @@ public class AppSettings
     public bool   PostCleanEnabled  { get; set; } = false;
     public string PostCleanCommands { get; set; } = "";
 
-    // global exclusions — paths that are NEVER cleaned regardless of what Winapp2.ini says
-    // uses the same ExcludeKey syntax: PATH|%LocalAppData%\...\Service Worker
+    // Global file, folder and registry exclusions;uses the same syntax as Winapp2.ini.
+    // Examples: PATH|C:\Temp, FILE|C:\Logs|*.log, REG|HKCU\Software\Example
     public bool         GlobalExclusionsEnabled { get; set; } = false;
     public List<string> GlobalExclusions        { get; set; } = [];
 

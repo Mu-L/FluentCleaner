@@ -29,7 +29,8 @@ public class CleaningService
     private ScanResult Analyze(CleanerEntry entry, IProgress<string>? progress, CancellationToken token = default)
     {
         var result = new ScanResult { Entry = entry };
-        var excluded = BuildExclusions(entry);
+        var fileExclusions = BuildFileExclusions(entry);
+        var registryExclusions = BuildRegistryExclusions(entry);
 
         // Wrap the caller's progress so every path report is prefixed with the entry name.
         // e.g. "Firefox Cache >>C:\Users\...\Cache\Cache_Data"
@@ -46,7 +47,7 @@ public class CleaningService
         {
             try
             {
-                foreach (var file in FindFiles(fileKey, excluded, entryProgress, token))
+                foreach (var file in FindFiles(fileKey, fileExclusions, entryProgress, token))
                 {
                     if (!seen.Add(file)) continue;
 
@@ -64,7 +65,7 @@ public class CleaningService
 
         foreach (var regKey in entry.RegKeys)
         {
-            try { result.RegistryToDelete.AddRange(FindRegistryItems(regKey)); }
+            try { result.RegistryToDelete.AddRange(FindRegistryItems(regKey, registryExclusions)); }
             catch { }
         }
 
@@ -83,9 +84,8 @@ public class CleaningService
         foreach (var dir in _expander.ResolvePaths(fileKey.Path))
         {
             if (!Directory.Exists(dir)) continue;
-            progress?.Report(dir);
 
-            foreach (var f in EnumerateFilesSafe(dir, patterns, recurse, progress, token))
+            foreach (var f in EnumerateFilesSafe(dir, patterns, excluded, recurse, progress, token))
                 if (!IsExcluded(f, excluded) && !IsProtected(f))
                     yield return f;
         }
@@ -95,8 +95,16 @@ public class CleaningService
        8.3 short-name aliases,we don't). HashSet drops files that match more than one pattern.
        Reparse points skipped;Windows ships with fun traps like
      C:\Users\All Users >> C:\ProgramData >> All Users >>....forever */
-    private static IEnumerable<string> EnumerateFilesSafe(string root, string[] patterns, bool recurse, IProgress<string>? progress = null, CancellationToken token = default)
+    private static IEnumerable<string> EnumerateFilesSafe(string root, string[] patterns, List<ExclusionRule> excluded, bool recurse, IProgress<string>? progress = null, CancellationToken token = default)
     {
+        //Whole-root check:skip an excluded branch before touching anything below it
+        var scanRoot = root.TrimEnd('\\') + "\\";
+        if (excluded.Any(rule => rule.Pattern is null &&
+            scanRoot.StartsWith(rule.DirPrefix, StringComparison.OrdinalIgnoreCase)))
+            yield break;
+
+        progress?.Report(root);
+
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var p in patterns)
         {
@@ -124,15 +132,17 @@ public class CleaningService
         foreach (var sub in dirs)
         {
             token.ThrowIfCancellationRequested(); //one check per folder is enough;no need to go per-file
-            progress?.Report(sub);
-            foreach (var f in EnumerateFilesSafe(sub, patterns, recurse: true, progress, token))
+            foreach (var f in EnumerateFilesSafe(sub, patterns, excluded, recurse: true, progress, token))
                 yield return f;
         }
     }
 
     // Checks whether a registry key/value exists before queuing it for deletion
-    private static IEnumerable<RegistryItemToDelete> FindRegistryItems(RegKeyEntry regKey)
+    private static IEnumerable<RegistryItemToDelete> FindRegistryItems(RegKeyEntry regKey, List<string> exclusions)
     {
+        if (IsRegistryPathExcluded(regKey.KeyPath, exclusions))
+            yield break;
+
         var (hive, subKey) = SplitHiveSubKey(regKey.KeyPath);
         using var root = RegistryHelpers.OpenHive(hive);
         if (root is null) yield break;
@@ -162,6 +172,7 @@ public class CleaningService
     {
         int count = 0;
         long bytes = 0;
+        var registryExclusions = BuildRegistryExclusions(result.Entry);
 
         foreach (var file in result.FilesToDelete)
         {
@@ -181,9 +192,11 @@ public class CleaningService
         {
             try
             {
-                DeleteRegistryItem(regItem);
-                count++;
-                progress?.Report(ResourceService.Fmt("Prog_Registry", regItem));
+                if (DeleteRegistryItem(regItem, registryExclusions))
+                {
+                    count++;
+                    progress?.Report(ResourceService.Fmt("Prog_Registry", regItem));
+                }
             }
             catch { }
         }
@@ -196,25 +209,71 @@ public class CleaningService
         return (count, bytes);
     }
 
-    /* Deletes a single registry value or an entire key tree, depending on whether
-       ValueName is set. Both paths are no-ops if the target no longer exists. */
-    private static void DeleteRegistryItem(RegistryItemToDelete item)
+    /* Deletes a registry value or key tree. If a REG exclusion sits below the target,
+       the tree is cleaned one branch at a time so the protected key stays intact. */
+    private static bool DeleteRegistryItem(RegistryItemToDelete item, List<string> exclusions)
     {
+        var itemPath = NormalizeRegistryPath(item.KeyPath);
+        if (IsRegistryPathExcluded(itemPath, exclusions))
+            return false;
+
         var (hive, subKey) = SplitHiveSubKey(item.KeyPath);
         using var root = RegistryHelpers.OpenHive(hive);
-        if (root is null) return;
+        if (root is null) return false;
 
         if (item.ValueName is not null)
         {
             using var key = root.OpenSubKey(subKey, writable: true);
-            key?.DeleteValue(item.ValueName, throwOnMissingValue: false); //only delete the value, not the whole key
+            if (key is null) return false;
+            key.DeleteValue(item.ValueName, throwOnMissingValue: false);
+            return true;
         }
-        else
+
+        using (var key = root.OpenSubKey(subKey, writable: false))
+            if (key is null) return false;
+
+        var protectedKeys = exclusions
+            .Where(path => IsSameOrChild(path, itemPath) && RegistryKeyExists(path))
+            .ToList();
+
+        if (protectedKeys.Count == 0)
         {
             var parentSubKey = Path.GetDirectoryName(subKey)?.Replace('/', '\\') ?? "";
             var keyName = Path.GetFileName(subKey);
             using var parent = root.OpenSubKey(parentSubKey, writable: true);
-            parent?.DeleteSubKeyTree(keyName, throwOnMissingSubKey: false); // delete the whole key tree; if it's already gone, skip silently
+            if (parent is null) return false;
+            parent.DeleteSubKeyTree(keyName, throwOnMissingSubKey: false);
+            return true;
+        }
+
+        using var target = root.OpenSubKey(subKey, writable: true);
+        if (target is null) return false;
+        DeleteRegistryTreeExcept(target, itemPath, protectedKeys);
+        return true;
+    }
+
+    // Removes a key's contents while leaving excluded branches and their parents in place.
+    private static void DeleteRegistryTreeExcept(RegistryKey key, string keyPath, List<string> exclusions)
+    {
+        foreach (var valueName in key.GetValueNames())
+            key.DeleteValue(valueName, throwOnMissingValue: false);
+
+        foreach (var subKeyName in key.GetSubKeyNames())
+        {
+            var childPath = keyPath + "\\" + subKeyName;
+            if (IsRegistryPathExcluded(childPath, exclusions))
+                continue;
+
+            if (exclusions.Any(path => IsSameOrChild(path, childPath)))
+            {
+                using var child = key.OpenSubKey(subKeyName, writable: true);
+                if (child is not null)
+                    DeleteRegistryTreeExcept(child, childPath, exclusions);
+            }
+            else
+            {
+                key.DeleteSubKeyTree(subKeyName, throwOnMissingSubKey: false);
+            }
         }
     }
 
@@ -245,28 +304,85 @@ public class CleaningService
     /* Turns the entry's ExcludeKey lines into rules we can actually match against during the scan.
        REG exclusions are skipped here;they don't apply to file paths anyway.
        Global exclusions from Settings are layered on top,they override everything. */
-    private List<ExclusionRule> BuildExclusions(CleanerEntry entry)
+    private List<ExclusionRule> BuildFileExclusions(CleanerEntry entry)
     {
         var rules = new List<ExclusionRule>();
 
         // per-entry ExcludeKeys from the INI
         foreach (var ex in entry.ExcludeKeys)
-            AddRule(ex, rules);
+            AddFileRule(ex, rules);
 
         // app-level exclusions;so this are the paths the user never wants touched, regardless of INI
         var settings = AppSettings.Instance;
         if (settings.GlobalExclusionsEnabled)
             foreach (var line in settings.GlobalExclusions)
-                AddRule(ExcludeKeyEntry.Parse(line), rules);
+                AddFileRule(ExcludeKeyEntry.Parse(line), rules);
 
         return rules;
     }
 
-    private void AddRule(ExcludeKeyEntry ex, List<ExclusionRule> rules)
+    private void AddFileRule(ExcludeKeyEntry ex, List<ExclusionRule> rules)
     {
         if (ex.Type is ExcludeType.Reg) return;
         foreach (var p in _expander.ResolvePaths(ex.Path))
             rules.Add(new ExclusionRule(p.TrimEnd('\\') + "\\", ex.Pattern));
+    }
+
+    // Registry exclusions stay separate because they protect key branches, not file paths.
+    private static List<string> BuildRegistryExclusions(CleanerEntry entry)
+    {
+        var paths = entry.ExcludeKeys
+            .Where(ex => ex.Type == ExcludeType.Reg)
+            .Select(ex => NormalizeRegistryPath(ex.Path))
+            .Where(path => path.Length > 0)
+            .ToList();
+
+        var settings = AppSettings.Instance;
+        if (settings.GlobalExclusionsEnabled)
+        {
+            paths.AddRange(settings.GlobalExclusions
+                .Select(ExcludeKeyEntry.Parse)
+                .Where(ex => ex.Type == ExcludeType.Reg)
+                .Select(ex => NormalizeRegistryPath(ex.Path))
+                .Where(path => path.Length > 0));
+        }
+
+        return paths.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+    }
+
+    // Matches the excluded key itself and every key below it.
+    private static bool IsRegistryPathExcluded(string path, List<string> exclusions)
+    {
+        var normalized = NormalizeRegistryPath(path);
+        return exclusions.Any(excluded => IsSameOrChild(normalized, excluded));
+    }
+
+    private static bool IsSameOrChild(string path, string parent) =>
+        path.Equals(parent, StringComparison.OrdinalIgnoreCase) ||
+        path.StartsWith(parent + "\\", StringComparison.OrdinalIgnoreCase);
+
+    private static bool RegistryKeyExists(string path)
+    {
+        var (hive, subKey) = SplitHiveSubKey(path);
+        using var root = RegistryHelpers.OpenHive(hive);
+        using var key = root?.OpenSubKey(subKey, writable: false);
+        return key is not null;
+    }
+
+    private static string NormalizeRegistryPath(string path)
+    {
+        var (hive, subKey) = SplitHiveSubKey(path.Trim().TrimEnd('\\'));
+        hive = hive switch
+        {
+            "HKEY_CURRENT_USER"   => "HKCU",
+            "HKEY_LOCAL_MACHINE"  => "HKLM",
+            "HKEY_USERS"          => "HKU",
+            "HKEY_CURRENT_CONFIG" => "HKCC",
+            "HKEY_CLASSES_ROOT"   => "HKCR",
+            _ => hive
+        };
+
+        return subKey.Length == 0 ? hive : hive + "\\" + subKey.Trim('\\');
     }
 
     // Probe whether a file is deletable right now by requesting DELETE access via CreateFileW.

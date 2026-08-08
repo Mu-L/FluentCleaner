@@ -4,8 +4,8 @@ namespace FluentCleaner.Services;
 
 public enum SchedulerFrequency { Daily, Weekly, Logon }
 
-//Creates the Windows task that starts this executable with /AUTO. Modern uses
-//its own task name so installing a schedule never replaces the Classic one
+// Creates the Windows task that starts this executable with /AUTO. Modern uses
+// its own task name so installing a schedule never replaces the Classic one.
 public static class TaskSchedulerService
 {
     private const string TaskName = "FluentCleaner Modern AutoClean";
