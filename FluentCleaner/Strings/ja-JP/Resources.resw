@@ -61,7 +61,7 @@
   <data name="St_MenuCollapseAll"><value>すべて折りたたむ</value></data>
   <data name="St_MenuSortDesc"><value>サイズの降順 ↓</value></data>
   <data name="St_MenuSortAsc"><value>サイズの昇順 ↑</value></data>
-  <data name="St_MenuRefresh"><value>更新</value></data>
+  <data name="St_MenuRefresh"><value>最新の情報に更新</value></data>
 
   <!-- Cleaner Page — detail view labels -->
   <data name="DetailHeaderFiles.Text"><value>ファイル</value></data>
@@ -108,8 +108,8 @@
   <data name="St_Loading"><value>Winapp2.iniを読み込み中...</value></data>
   <data name="St_SearchFound"><value>一致するエントリを{0}件表示しています。</value></data>
   <data name="St_SearchNone"><value>一致するエントリはありません。</value></data>
-  <data name="St_ParsingDatabases"><value>データベースを解析中...</value></data>
-  <data name="St_AnalysisReady"><value>解析の準備ができました — {1}件のエントリから{0}個のアプリを検出しました。</value></data>
+  <data name="St_ParsingDatabases"><value>データベースを読み取り中...</value></data>
+  <data name="St_AnalysisReady"><value>解析が完了しました — {1}件のエントリから{0}個のアプリを検出しました。</value></data>
   <data name="St_NothingSelected"><value>何も選択されていません。</value></data>
   <data name="St_Scanning"><value>スキャン中...</value></data>
   <data name="St_ScanComplete"><value>スキャン完了 — ファイル{0}件、レジストリ項目{1}件（{2}）</value></data>
@@ -244,7 +244,7 @@
   <data name="Scheduler_Applying"><value>適用中…</value></data>
   <data name="Scheduler_ErrorExecutablePath"><value>FluentCleanerの実行ファイルのパスを特定できませんでした。</value></data>
   <data name="Scheduler_ResultCreated"><value>スケジュールされたタスクを作成しました。</value></data>
-  <data name="Scheduler_ResultNothingToRemove"><value>削除する項目はありません。</value></data>
+  <data name="Scheduler_ResultNothingToRemove"><value>削除するタスクはありません。</value></data>
   <data name="Scheduler_ResultRemoved"><value>スケジュールされたタスクを削除しました。</value></data>
   <data name="Scheduler_ErrorSchtasks"><value>Windowsタスクスケジューラでエラーが発生しました。</value></data>
   <data name="St_ExportSuccess"><value>設定を{0}にエクスポートしました</value></data>
@@ -283,7 +283,7 @@
   <data name="St_CustomScriptError"><value>{0}: スクリプトを読み込めませんでした — {1}</value></data>
   <data name="St_CustomCompleted"><value>{0}: 正常に完了しました。</value></data>
   <data name="St_CustomFailed"><value>{0}: 失敗しました（終了コード{1}）。</value></data>
-  <data name="St_CustomEntryNone"><value>解析されたエントリはありません</value></data>
+  <data name="St_CustomEntryNone"><value>読み取れたエントリはありません</value></data>
   <data name="St_CustomEntryOne"><value>1件のエントリ · {0}</value></data>
   <data name="St_CustomEntryMany"><value>{0}件のエントリ · {1}</value></data>
   <data name="St_CustomEntryEnabled"><value>有効</value></data>
@@ -296,7 +296,7 @@
   <data name="DlgNewCleanerTypePs1.Content"><value>PowerShellスクリプト（.ps1）</value></data>
   <data name="DlgNewCleanerNameHeader"><value>名前</value></data>
   <data name="DlgNewCleanerNamePlaceholder"><value>マイクリーナー</value></data>
-  <data name="DlgNewCleanerAiPlaceholder"><value>AIで生成 - クリーンアップしたい内容を説明してください（結果は異なる場合があります）</value></data>
+  <data name="DlgNewCleanerAiPlaceholder"><value>AIで生成 - クリーンアップしたい内容を説明してください（生成結果は毎回異なる場合があります）</value></data>
   <data name="DlgNewCleanerGenerate.Content"><value>生成</value></data>
   <data name="DlgNewCleanerGenerateBtn"><value>生成</value></data>
   <data name="DlgNewCleanerContentLabel"><value>内容</value></data>
