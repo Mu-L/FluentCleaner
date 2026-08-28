@@ -146,6 +146,14 @@ Rule Lab parses the text currently in its editor and shows which files and regis
 
 Be especially careful with `RECURSE`, `REMOVESELF`, broad environment paths, and registry rules. Start narrowly, dry-run, inspect exact paths, then widen the rule only when necessary.
 
+## Cookies to keep
+
+Open **Options > Cookies** to scan supported browser profiles. Move websites to **Cookies to keep** when their login cookies should survive a selected browser-cookie clean.
+
+Chromium uses one shared cookie database format, so the same engine supports Microsoft Edge, Google Chrome, Brave, Chromium, Vivaldi, and Opera profiles. Mozilla Firefox uses its own database adapter. Close running browsers before refreshing the list or cleaning; an open browser may lock its database.
+
+The selected Winapp2 entry still decides whether browser cookies are cleaned. With an empty keep-list, FluentCleaner performs the normal whole-file cleanup. With protected websites present, the database is cleaned row by row instead. If safe selective access fails, FluentCleaner skips the database and never falls back to deleting it completely.
+
 ## Global exclusions
 
 Open **Options > Exclusions**, enable global exclusions, and add one rule per entry:
@@ -175,6 +183,7 @@ FluentCleaner also contains a small read-only protected-path list for data that 
 | Page | Purpose |
 |---|---|
 | **Settings** | Language, Winapp2, Winapp3, custom database, reload and database updates |
+| **Cookies** | Website cookies that should survive browser cleaning |
 | **Exclusions** | Global file, folder and registry protection |
 | **Tasks** | Commands executed sequentially after a completed clean |
 | **History** | Up to 50 recorded clean runs with items removed and bytes freed |
