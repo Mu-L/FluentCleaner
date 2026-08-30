@@ -142,8 +142,8 @@
   ============================================================ -->
   <data name="SettingsTitle.Text"><value>Settings</value></data>
   <!-- Settings Page — donation InfoBar -->
-  <data name="DonationBar.Title"><value>FluentCleaner is going open source.</value></data>
-  <data name="DonationBar.Message"><value>Put a lot of work into this — if it helps you and you feel like saying thanks, a donation would really mean a lot. ♥</value></data>
+  <data name="DonationBar.Title"><value>Support FluentCleaner</value></data>
+  <data name="DonationBar.Message"><value>Choose an amount and currency for PayPal, or support the project through Ko-fi. ♥</value></data>
   <data name="BtnDonate.Content"><value>Support the project</value></data>
   <data name="MenuDonatePayPal.Text"><value>Donate via PayPal</value></data>
   <data name="MenuDonateKoFi.Text"><value>Donate via Ko-fi</value></data>
@@ -358,5 +358,32 @@
   <data name="CLI_AppxNothingRemoved"><value>  Nothing was removed.</value></data>
   <data name="CLI_AppxDisabled"><value>  Winappx database is disabled — enable it in Settings.</value></data>
   <data name="CLI_AppxNotFound"><value>  Winappx.ini not found — download it in Settings.</value></data>
+
+  <!-- Settings navigator / Cookie Manager -->
+  <data name="SettingsNavGeneral.Content"><value>General</value></data>
+  <data name="SettingsNavCookies.Content"><value>Cookies</value></data>
+  <data name="SettingsNavExclusions.Content"><value>Exclusions</value></data>
+  <data name="SettingsNavTasks.Content"><value>Post-clean tasks</value></data>
+  <data name="SettingsNavHistory.Content"><value>History</value></data>
+  <data name="SettingsNavAI.Content"><value>AI</value></data>
+  <data name="SettingsNavScheduler.Content"><value>Scheduler</value></data>
+  <data name="SettingsNavAbout.Content"><value>About</value></data>
+  <data name="Cookies_Title"><value>Cookies</value></data>
+  <data name="Cookies_Subtitle"><value>Choose website cookies that should survive browser cleaning</value></data>
+  <data name="Cookies_Available"><value>Cookies found</value></data>
+  <data name="Cookies_Kept"><value>Cookies to keep</value></data>
+  <data name="Cookies_Search"><value>Search</value></data>
+  <data name="Cookies_Refresh"><value>Refresh</value></data>
+  <data name="Cookies_Scanning"><value>Reading browser cookies…</value></data>
+  <data name="Cookies_Status"><value>{0} websites found in {1} browser profiles.</value></data>
+  <data name="Cookies_StatusUnavailable"><value>{0} websites found in {1} browser profiles · {2} unavailable. Close browsers and refresh.</value></data>
+  <data name="Cookies_DeleteUnavailable"><value>{0} browser profiles could not be changed. Close browsers and try again.</value></data>
+  <data name="Cookies_MiKeep"><value>Keep</value></data>
+  <data name="Cookies_MiDelete"><value>Delete</value></data>
+  <data name="Cookies_MiRemove"><value>Remove</value></data>
+  <data name="Cookies_MiImport"><value>Import...</value></data>
+  <data name="Cookies_MiExport"><value>Export...</value></data>
+  <data name="Cookies_TextFiles"><value>Text files</value></data>
+  <data name="Cleaning_CleanedCookies"><value>Cleaned {0} cookies: {1}</value></data>
 
 </root>

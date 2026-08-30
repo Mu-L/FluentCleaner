@@ -133,8 +133,8 @@
   ============================================================ -->
   <data name="SettingsTitle.Text"><value>Einstellungen</value></data>
   <!-- Settings Page — donation InfoBar -->
-  <data name="DonationBar.Title"><value>FluentCleaner wird Open Source.</value></data>
-  <data name="DonationBar.Message"><value>Hier steckt viel Arbeit drin — wenn dir die App hilft und du Danke sagen möchtest, würde eine Spende wirklich viel bedeuten. ♥</value></data>
+  <data name="DonationBar.Title"><value>FluentCleaner unterstützen</value></data>
+  <data name="DonationBar.Message"><value>Wähle für PayPal einen Betrag und eine Währung oder unterstütze das Projekt über Ko-fi. ♥</value></data>
   <data name="BtnDonate.Content"><value>Projekt unterstützen</value></data>
   <data name="MenuDonatePayPal.Text"><value>Per PayPal spenden</value></data>
   <data name="MenuDonateKoFi.Text"><value>Per Ko-fi spenden</value></data>
@@ -346,5 +346,32 @@
   <data name="CLI_AppxNothingRemoved"><value>  Nichts wurde entfernt.</value></data>
   <data name="CLI_AppxDisabled"><value>  Winappx-Datenbank deaktiviert — in den Einstellungen aktivieren.</value></data>
   <data name="CLI_AppxNotFound"><value>  Winappx.ini nicht gefunden — in den Einstellungen herunterladen.</value></data>
+
+  <!-- Settings-Navigation / Cookie Manager -->
+  <data name="SettingsNavGeneral.Content"><value>Allgemein</value></data>
+  <data name="SettingsNavCookies.Content"><value>Cookies</value></data>
+  <data name="SettingsNavExclusions.Content"><value>Ausschließen</value></data>
+  <data name="SettingsNavTasks.Content"><value>Aufgaben</value></data>
+  <data name="SettingsNavHistory.Content"><value>Verlauf</value></data>
+  <data name="SettingsNavAI.Content"><value>KI</value></data>
+  <data name="SettingsNavScheduler.Content"><value>Zeitplan</value></data>
+  <data name="SettingsNavAbout.Content"><value>Über</value></data>
+  <data name="Cookies_Title"><value>Cookies</value></data>
+  <data name="Cookies_Subtitle"><value>Wähle Website-Cookies, die bei der Browser-Bereinigung erhalten bleiben</value></data>
+  <data name="Cookies_Available"><value>Gefundene Cookies</value></data>
+  <data name="Cookies_Kept"><value>Cookies behalten</value></data>
+  <data name="Cookies_Search"><value>Suche</value></data>
+  <data name="Cookies_Refresh"><value>Neu laden</value></data>
+  <data name="Cookies_Scanning"><value>Browser-Cookies werden gelesen…</value></data>
+  <data name="Cookies_Status"><value>{0} Websites in {1} Browserprofilen gefunden.</value></data>
+  <data name="Cookies_StatusUnavailable"><value>{0} Websites in {1} Browserprofilen gefunden · {2} nicht verfügbar. Browser schließen und neu laden.</value></data>
+  <data name="Cookies_DeleteUnavailable"><value>{0} Browserprofile konnten nicht geändert werden. Browser schließen und erneut versuchen.</value></data>
+  <data name="Cookies_MiKeep"><value>Behalten</value></data>
+  <data name="Cookies_MiDelete"><value>Löschen</value></data>
+  <data name="Cookies_MiRemove"><value>Entfernen</value></data>
+  <data name="Cookies_MiImport"><value>Importieren...</value></data>
+  <data name="Cookies_MiExport"><value>Exportieren...</value></data>
+  <data name="Cookies_TextFiles"><value>Textdateien</value></data>
+  <data name="Cleaning_CleanedCookies"><value>{0} Cookies bereinigt: {1}</value></data>
 
 </root>
