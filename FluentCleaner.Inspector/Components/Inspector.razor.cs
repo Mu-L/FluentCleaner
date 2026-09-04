@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using System.Net.Http.Json;
 using FluentCleaner.Models;
 using FluentCleaner.Services;
 using Microsoft.AspNetCore.Components;
@@ -14,6 +15,15 @@ public partial class Inspector
     private const long MaxSettingsSize = 2 * 1024 * 1024;
     private const int PageSize = 50;
 
+    private bool VersionCheckRequested { get; set; }
+    private bool VersionCheckUnavailable { get; set; }
+    private bool VersionUpdateAvailable { get; set; }
+    private string EditionName { get; set; } = "FluentCleaner";
+    private string InstalledVersion { get; set; } = "";
+    private string LatestVersion { get; set; } = "";
+    private string VersionStatusText { get; set; } = "";
+    private string VersionDownloadUrl { get; set; } = "https://github.com/builtbybel/FluentCleaner/releases";
+
     private DatabaseSnapshot? Primary { get; set; }
     private DatabaseSnapshot? Comparison { get; set; }
     private CleanerEntry? DetailEntry { get; set; }
@@ -26,6 +36,44 @@ public partial class Inspector
     private string _searchText = "";
     private string _activeFilter = "all";
     private int CurrentPage { get; set; } = 1;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var query = ParseQuery(Navigation.ToAbsoluteUri(Navigation.Uri).Query);
+        if (!query.TryGetValue("edition", out var editionValue) ||
+            !query.TryGetValue("version", out var versionValue))
+            return;
+
+        var edition = editionValue.ToString().Trim().ToLowerInvariant();
+        InstalledVersion = versionValue.ToString().Trim();
+        if ((edition != "classic" && edition != "modern") || !Version.TryParse(InstalledVersion, out var installed))
+            return;
+
+        VersionCheckRequested = true;
+        EditionName = edition == "classic" ? "FluentCleaner Classic" : "FluentCleaner Modern";
+
+        try
+        {
+            var catalog = await Http.GetFromJsonAsync<Dictionary<string, VersionRelease>>("versions.json");
+            if (catalog is null || !catalog.TryGetValue(edition, out var release) ||
+                !Version.TryParse(release.Version, out var latest))
+                throw new InvalidDataException("The online version catalog is unavailable.");
+
+            LatestVersion = release.Version;
+            VersionDownloadUrl = release.DownloadUrl;
+            VersionUpdateAvailable = installed < latest;
+            VersionStatusText = VersionUpdateAvailable
+                ? $"Update available: {LatestVersion}"
+                : installed > latest
+                    ? "This build is newer than the current public release."
+                    : "You are up to date.";
+        }
+        catch
+        {
+            VersionCheckUnavailable = true;
+            VersionStatusText = "The update status could not be checked right now.";
+        }
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -227,6 +275,21 @@ public partial class Inspector
     private static string DisplaySection(CleanerEntry entry) =>
         string.IsNullOrWhiteSpace(entry.Section) ? "Uncategorized" : entry.Section;
 
+    //Only edition and version cross this boundary; keep URL parsing local instead of adding a package.
+    private static Dictionary<string, string> ParseQuery(string query)
+    {
+        var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var part in query.TrimStart('?').Split(new[] { '&' }, StringSplitOptions.RemoveEmptyEntries))
+        {
+            var separator = part.IndexOf('=');
+            if (separator <= 0) continue;
+            var name = Uri.UnescapeDataString(part.Substring(0, separator));
+            var value = Uri.UnescapeDataString(part.Substring(separator + 1).Replace("+", " "));
+            values[name] = value;
+        }
+        return values;
+    }
+
     private sealed class DatabaseSnapshot
     {
         public required string FileName { get; init; }
@@ -266,5 +329,11 @@ public partial class Inspector
                 IgnoredBlocks = Math.Max(0, headers.Length - metadataBlocks - entries.Count)
             };
         }
+    }
+
+    public sealed class VersionRelease
+    {
+        public string Version { get; set; } = "";
+        public string DownloadUrl { get; set; } = "";
     }
 }

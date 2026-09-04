@@ -1,9 +1,11 @@
 @inject IJSRuntime JS
+@inject NavigationManager Navigation
+@inject HttpClient Http
 
 <div class="app-shell">
     <header class="topbar">
         <a class="brand" href="." aria-label="FluentCleaner Inspector home">
-            <span class="brand-mark" aria-hidden="true">F</span>
+            <img class="brand-mark" src="assets/fluentcleaner.png" alt="" />
             <span>
                 <strong>FluentCleaner Inspector</strong>
                 <small>Winapp2 database inspector</small>
@@ -14,6 +16,44 @@
     </header>
 
     <main>
+        <section class="project-strip" aria-label="About FluentCleaner">
+            <div class="project-copy">
+                <small>ABOUT FLUENTCLEANER</small>
+                <strong>FluentCleaner</strong>
+                <span>A free Windows cleaner powered by Winapp2. Inspector opens the same database locally, explains its rules, compares releases and exports selected cleaners for review.</span>
+            </div>
+            <div class="project-actions">
+                <div class="action-group">
+                    <span>GET FLUENTCLEANER</span>
+                    <nav aria-label="Download FluentCleaner">
+                        <a class="button download-button" href="https://github.com/builtbybel/FluentCleaner/releases/latest/download/FluentCleaner-Classic-net48.zip">Download Classic</a>
+                        <a class="button download-button" href="https://github.com/builtbybel/FluentCleaner/releases/latest/download/FluentCleaner-win-x64.zip">Download Modern</a>
+                    </nav>
+                </div>
+                <div class="action-group support-group">
+                    <span>SUPPORT THE PROJECT</span>
+                    <nav aria-label="Support FluentCleaner development">
+                        <a class="button paypal-button" href="https://www.paypal.com/donate/?hosted_button_id=99X8UQJQP96WN" target="_blank" rel="noreferrer">Donate with PayPal</a>
+                        <a class="button kofi-button" href="https://ko-fi.com/builtbybel" target="_blank" rel="noreferrer">Support on Ko-fi</a>
+                    </nav>
+                </div>
+            </div>
+        </section>
+
+        @if (VersionCheckRequested)
+        {
+            <section class="version-banner @(VersionUpdateAvailable ? "update" : VersionCheckUnavailable ? "unavailable" : "current")" aria-live="polite">
+                <span class="version-symbol" aria-hidden="true">@(VersionUpdateAvailable ? "↑" : VersionCheckUnavailable ? "!" : "✓")</span>
+                <div>
+                    <strong>@EditionName @InstalledVersion</strong>
+                    <span>@VersionStatusText</span>
+                </div>
+                <a class="button version-action" href="@VersionDownloadUrl">
+                    @(VersionUpdateAvailable ? $"Download {LatestVersion}" : VersionCheckUnavailable ? "Open releases" : "Latest release")
+                </a>
+            </section>
+        }
+
         <section class="import-grid" aria-label="Import files">
             <div class="drop-card primary @(Primary is null ? "empty" : "loaded")">
                 <div class="drop-icon" aria-hidden="true">{ }</div>
@@ -126,6 +166,9 @@
                                 <option value="removed">Removed in comparison</option>
                             }
                         </select>
+                        <button class="button primary-button toolbar-export" disabled="@(SelectedNames.Count == 0)" @onclick="ExportHandoffAsync">
+                            Export selection (@SelectedNames.Count.ToString("N0"))
+                        </button>
                     </div>
 
                     <div class="selection-bar">
@@ -135,6 +178,11 @@
                             <button @onclick="ClearSelection">Clear selection</button>
                         </span>
                     </div>
+
+                    @if (!string.IsNullOrWhiteSpace(HandoffMessage))
+                    {
+                        <div class="handoff-status" role="status">@HandoffMessage</div>
+                    }
 
                     <div class="entry-list" role="list">
                         @foreach (var entry in PageEntries)
@@ -222,16 +270,6 @@
                 </aside>
             </section>
 
-            <section class="handoff-bar">
-                <div>
-                    <p class="eyebrow">FLUENTCLEANER HANDOFF</p>
-                    <strong>@SelectedNames.Count.ToString("N0") entries ready for local review</strong>
-                    <span>@(string.IsNullOrWhiteSpace(HandoffMessage)
-                        ? "Exports names only. FluentCleaner resolves and analyzes them again using its own database."
-                        : HandoffMessage)</span>
-                </div>
-                <button class="button primary-button handoff-button" disabled="@(SelectedNames.Count == 0)" @onclick="ExportHandoffAsync">Export selection</button>
-            </section>
         }
     </main>
 
