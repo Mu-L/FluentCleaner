@@ -1,0 +1,48 @@
+name: Deploy FluentCleaner Inspector
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "FluentCleaner.Inspector/**"
+      - "FluentCleaner.Core/Models/**"
+      - "FluentCleaner.Core/Services/Winapp2Parser.cs"
+      - ".github/workflows/inspector-pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+      - name: Publish Inspector
+        run: dotnet publish FluentCleaner.Inspector/FluentCleaner.Inspector.csproj -c Release -o publish
+      - name: Set GitHub Pages base path
+        run: sed -i 's|<base href="/" />|<base href="/FluentCleaner/" />|' publish/wwwroot/index.html
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: publish/wwwroot
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
